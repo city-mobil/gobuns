@@ -1,0 +1,17 @@
+version: '3.4'
+
+services:
+  tests:
+    build:
+      dockerfile: Dockerfile
+      context: .ci
+    environment:
+      - GOPATH=/cache/.go
+      - GOPRIVATE
+    working_dir: /go-buns
+    command: .ci/run.sh
+    volumes:
+      - .:/go-buns:rw
+      - ${GOPATH}:/cache/.go:ro
+    networks:
+      - buns

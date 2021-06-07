@@ -1,0 +1,26 @@
+kafka:
+  producer:
+    brokers: 'localhost:9092' # любой хост.
+    balancer: "roundrobin"
+    queue:
+      max_messages: 10000
+      max_bytes: 1048576
+      buffering_timeout: 10ms # Увеличивайте или уменьшайте эту опцию в зависимости от нагрузки. В случае
+      # вопросов напишите @a.petrukhin
+    net:
+      read_timeout: 3s
+      dial_timeout: 3s
+      write_timeout: 3s
+      stats:
+        prefix: "some_prefix"
+        enabled: true
+        refresh_interval: 1s
+    required_acks: 1
+    compression: 0
+  breaker:
+    enabled: true
+    threshold: 5
+    max_fails: 10
+  log:
+    level: "debug"
+    errors_level: "debug"

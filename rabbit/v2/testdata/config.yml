@@ -1,0 +1,17 @@
+rabbit:
+  connector:
+    addr: "t_addr"
+    login: "t_login"
+    password: "t_password"
+    reconnect_delay: 140ms
+    connect_timeout: 17s
+    heartbeat: 5s
+
+  consumer:
+    queue_name: "test_queue"
+    consumers_count: 5
+    consumer: "t_consumer"
+    heartbeat: 14ms
+    auto_ack: true
+    exclusive: true
+    no_wait: true

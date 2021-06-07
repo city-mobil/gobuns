@@ -1,0 +1,20 @@
+retries:
+  full:
+    max_attempts: 3
+    base_wait: '10ms'
+    max_wait: '1s'
+    max_jitter: '2s'
+    wait_type: 'random'
+  part:
+    base_wait: '10ms'
+    max_wait: '1s'
+wait:
+  full:
+    max_attempts: 3
+    base_wait: '10ms'
+    max_wait: '1s'
+    max_jitter: '2s'
+    wait_type: 'backoff'
+  part:
+    base_wait: '10s'
+    max_wait: '1s'

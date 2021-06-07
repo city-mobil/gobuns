@@ -1,0 +1,6 @@
+*.swp
+*.test
+*.out
+.idea
+vendor/
+*.cov

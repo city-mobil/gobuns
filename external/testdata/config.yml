@@ -1,0 +1,21 @@
+http:
+  google:
+    external:
+      client_name: 'ask_google'
+      dial_timeout: 100ms
+      keepalive_interval: 1m
+      max_idle_conns: 500
+      idle_conn_timeout: 1m
+      request_timeout: 200ms
+      no_https: false
+      retries:
+        wait_type: 'backoff'
+        base_wait: 25ms
+        max_attempts: 3
+      tls:
+        version: '1.1'
+        cert:
+          public: 'testdata/certs/client.crt'
+          private: 'testdata/certs/client.key'
+      metrics:
+        collect: true

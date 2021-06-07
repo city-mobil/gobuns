@@ -1,0 +1,28 @@
+auth:
+  tntcluster:
+    shard0:
+      name: 'primary'
+      addr: 'auth1.ddk:3301'
+      slaves: 'auth-slave1.ddk:3301,auth-slave2.ddk:3301'
+      query_timeout:
+        base_wait: '1m'
+      connect_timeout: '1m'
+      default_space: 'clients'
+      user: 'guest'
+      password: 'guest'
+      max_attempts: 5
+      pool_size: 30
+      max_pool_packet_size: 10
+      retries:
+        max_attempts: 3
+        base_wait: '10ms'
+    shard1:
+      addr: 'auth2.ddk:3301'
+      user: 'guest'
+      password: 'guest'
+      query_timeout:
+        wait_type: 'random'
+        max_jitter: '200ms'
+      retries:
+        wait_type: 'random'
+        max_jitter: '200ms'

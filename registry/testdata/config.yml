@@ -1,0 +1,8 @@
+app:
+  registry:
+    addr: localhost:8500
+    query_timeout: 2s
+    retries:
+      wait_type: 'backoff'
+      base_wait: 25ms
+      max_attempts: 3

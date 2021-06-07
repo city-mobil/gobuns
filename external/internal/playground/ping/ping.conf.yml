@@ -1,0 +1,25 @@
+ping:
+  jaeger:
+    service_name: 'ping'
+    disabled: false
+    agent: 'jaeger:6831'
+
+  external:
+    client_name: 'pinger'
+    dial_timeout: 100ms
+    keepalive_interval: 1m
+    max_idle_conns: 500
+    idle_conn_timeout: 1m
+    request_timeout: 20ms
+    no_https: false
+    retries:
+      wait_type: 'fixed'
+      base_wait: 0
+      max_attempts: 3
+    tls:
+      cert:
+        version: '1.3'
+        public: ''
+        private: ''
+    metrics:
+      collect: true

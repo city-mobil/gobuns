@@ -1,0 +1,14 @@
+int_slice:
+  - -1
+  - 8
+uint_slice: [ 4, 8 ]
+invalid_int_slice: [ "str1" ]
+int64_slice: [ 6, 4 ]
+
+float32_slice: [ 9.1, 17.8 ]
+float64_slice: [ 8.6, 32.3 ]
+
+duration_slice: [ "2s", "5ms" ]
+bool_slice: [ "true", "false" ]
+string_slice: [ "val1", "val2" ]
+string_comma_slice: [ "val1,val2", "val3" ]
