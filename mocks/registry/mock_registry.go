@@ -122,17 +122,17 @@ func (mr *MockClientMockRecorder) Name() *gomock.Call {
 }
 
 // Ping mocks base method.
-func (m *MockClient) Ping() error {
+func (m *MockClient) Ping(arg0 context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Ping")
+	ret := m.ctrl.Call(m, "Ping", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Ping indicates an expected call of Ping.
-func (mr *MockClientMockRecorder) Ping() *gomock.Call {
+func (mr *MockClientMockRecorder) Ping(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockClient)(nil).Ping))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockClient)(nil).Ping), arg0)
 }
 
 // SetComponentID mocks base method.

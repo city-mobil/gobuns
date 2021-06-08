@@ -29,7 +29,7 @@ type Client interface {
 	GetBool(context.Context, string) (bool, error)
 	GetInt(context.Context, string) (int, error)
 
-	Ping() error
+	Ping(context.Context) error
 	Name() string
 	ComponentType() string
 	ComponentID() string
@@ -96,7 +96,7 @@ func (c *client) GetInt(ctx context.Context, key string) (int, error) {
 	return strconv.Atoi(val)
 }
 
-func (c *client) Ping() error {
+func (c *client) Ping(_ context.Context) error {
 	hc, _, err := c.consulClient.Health().Node(c.componentID, nil)
 	if err != nil {
 		return err
