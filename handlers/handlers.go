@@ -62,12 +62,11 @@ func (h loggingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch v := err.(type) {
 		case *RequestError:
-			writeRequestError(w, v)
+			status = writeRequestError(w, v)
 			return
 		case *RequestErrorWithBody:
-			writeRequestError(w, v)
+			status = writeRequestError(w, v)
 			return
-		default:
 		}
 		status = http.StatusInternalServerError
 		w.WriteHeader(status)

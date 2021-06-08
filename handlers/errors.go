@@ -46,8 +46,9 @@ type requestErrorWrapper interface {
 	marshal() ([]byte, error)
 }
 
-func writeRequestError(w http.ResponseWriter, werr requestErrorWrapper) {
-	status := werr.getStatus()
+func writeRequestError(w http.ResponseWriter, werr requestErrorWrapper) (status int) {
+	status = werr.getStatus()
+
 	var dt []byte
 	dt, err := werr.marshal()
 	if err != nil {
@@ -57,4 +58,6 @@ func writeRequestError(w http.ResponseWriter, werr requestErrorWrapper) {
 	}
 	w.WriteHeader(status)
 	_, _ = w.Write(dt)
+
+	return
 }
