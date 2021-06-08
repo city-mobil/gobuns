@@ -7,14 +7,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/city-mobil/gobuns/health"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	kf "github.com/segmentio/kafka-go"
-
 	"github.com/city-mobil/gobuns/config"
 	"github.com/city-mobil/gobuns/graceful"
+	"github.com/city-mobil/gobuns/health"
 	"github.com/city-mobil/gobuns/kafka"
 	"github.com/city-mobil/gobuns/zlog"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	kf "github.com/segmentio/kafka-go"
 )
 
 func main() {

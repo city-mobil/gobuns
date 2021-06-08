@@ -14,21 +14,21 @@ const (
 	defaultStatsRefreshInterval   = time.Second
 )
 
-type StatsConfig struct {
+type ProducerStatsConfig struct {
 	StatsPrefix     string
 	RefreshInterval time.Duration
 	Enabled         bool
 }
 
-func newStatsConfig(prefix string) func() *StatsConfig {
+func newStatsConfig(prefix string) func() *ProducerStatsConfig {
 	var (
 		statsPrefix     = config.String(prefix+"stats.prefix", defaultStatsPrefix, "Kafka producer stats prefix.")
 		enabled         = config.Bool(prefix+"stats.enabled", defaultStatsCollectionEnabled, "Kafka producer stats enabled.")
 		refreshInterval = config.Duration(prefix+"stats.refresh_interval", defaultStatsRefreshInterval, "Kafka producer stats refresh interval")
 	)
 
-	return func() *StatsConfig {
-		return &StatsConfig{
+	return func() *ProducerStatsConfig {
+		return &ProducerStatsConfig{
 			StatsPrefix:     *statsPrefix,
 			RefreshInterval: *refreshInterval,
 			Enabled:         *enabled,
@@ -36,7 +36,7 @@ func newStatsConfig(prefix string) func() *StatsConfig {
 	}
 }
 
-type stats struct {
+type producerStats struct {
 	writesCounter   *promlib.Event
 	messagesCounter *promlib.Event
 	bytesCounter    *promlib.Event
@@ -45,7 +45,7 @@ type stats struct {
 	batchTimeMax    promlib.Gauge
 }
 
-func (s *stats) updateFromStats(st *kafka.WriterStats) {
+func (s *producerStats) updateFromStats(st *kafka.WriterStats) {
 	promlib.AddCntEvent(s.writesCounter, float64(st.Writes))
 	promlib.AddCntEvent(s.messagesCounter, float64(st.Messages))
 	promlib.AddCntEvent(s.bytesCounter, float64(st.Bytes))
@@ -54,14 +54,10 @@ func (s *stats) updateFromStats(st *kafka.WriterStats) {
 	s.batchTimeMax.Set(float64(st.BatchTime.Max.Milliseconds()))
 }
 
-func newProducerStats(prefix string) *stats {
-	if prefix == "" {
-		prefix = "kafka_producer_"
-	} else {
-		prefix += "_producer_"
-	}
+func newProducerStats(name string) *producerStats {
+	prefix := "kafka_producer_"
 
-	return &stats{
+	return &producerStats{
 		writesCounter: &promlib.Event{
 			Name:      prefix + "count_writes",
 			Namespace: promlib.GetGlobalNamespace(),

@@ -53,7 +53,7 @@ type producer struct {
 	config                *ProducerConfig
 	writer                *kafka.Writer
 	breaker               barber.Barber
-	stats                 *stats
+	stats                 *producerStats
 	completionCallbackSet uint32
 
 	onceCloser sync.Once

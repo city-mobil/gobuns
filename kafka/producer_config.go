@@ -7,7 +7,6 @@ import (
 	"github.com/city-mobil/gobuns/barber"
 	"github.com/city-mobil/gobuns/config"
 	"github.com/city-mobil/gobuns/zlog"
-
 	"github.com/segmentio/kafka-go"
 )
 
@@ -44,7 +43,7 @@ type ProducerConfig struct { //nolint:maligned
 	LogLevel              zlog.Level
 	ErrorLogLevel         zlog.Level
 	Compression           kafka.Compression
-	StatsConfig           *StatsConfig
+	StatsConfig           *ProducerStatsConfig
 	CircuitBreakerConfig  *barber.Config
 	CircuitBreakerEnabled bool
 }
