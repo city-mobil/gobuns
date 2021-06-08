@@ -16,10 +16,11 @@ var (
 )
 
 type Event struct {
-	Name      string
-	Namespace string
-	Subsystem string
-	Help      string
+	Name        string
+	Namespace   string
+	Subsystem   string
+	Help        string
+	ConstLabels Labels
 }
 
 type Labels = map[string]string
@@ -73,10 +74,11 @@ func registerCounter(e *Event) prometheus.Counter {
 		ns = globalNS
 	}
 	counter = prometheus.NewCounter(prometheus.CounterOpts{
-		Name:      e.Name,
-		Namespace: ns,
-		Subsystem: e.Subsystem,
-		Help:      e.Help,
+		Name:        e.Name,
+		Namespace:   ns,
+		Subsystem:   e.Subsystem,
+		Help:        e.Help,
+		ConstLabels: e.ConstLabels,
 	})
 
 	eventMutex.Lock()
@@ -122,10 +124,11 @@ func registerCounterVec(e *Event, params Labels) *prometheus.CounterVec {
 		ns = globalNS
 	}
 	counter = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name:      e.Name,
-		Namespace: ns,
-		Subsystem: e.Subsystem,
-		Help:      e.Help,
+		Name:        e.Name,
+		Namespace:   ns,
+		Subsystem:   e.Subsystem,
+		Help:        e.Help,
+		ConstLabels: e.ConstLabels,
 	}, labels)
 
 	eventMutex.Lock()
