@@ -2,6 +2,7 @@ package promlib
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -88,7 +89,7 @@ func (m *httpMiddleware) Handler(next http.Handler) http.Handler {
 func (m *httpMiddleware) HandlerFunc(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		labels := make(prometheus.Labels, 2)
-		labels["path"] = m.pathNameFunc(r)
+		labels["path"] = strings.ToValidUTF8(m.pathNameFunc(r), "?")
 		if m.useUserAgent {
 			labels["agent"] = r.UserAgent()
 		}
