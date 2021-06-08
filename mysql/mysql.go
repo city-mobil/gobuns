@@ -84,7 +84,7 @@ type Shard interface {
 	// gets at most one row and scans the result.
 	QueryRowReplicaTolerant(ctx context.Context, query string, args, dest []interface{}) error
 
-	// BarberStatus collects circuit-breaker stats.
+	// BarberStats collects circuit-breaker stats.
 	BarberStats() *BarberStats
 
 	// Close shutdowns all connections in shard.

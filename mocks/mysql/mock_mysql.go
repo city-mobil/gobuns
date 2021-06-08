@@ -68,6 +68,21 @@ func (mr *MockAdapterMockRecorder) BeginTx(arg0, arg1 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BeginTx", reflect.TypeOf((*MockAdapter)(nil).BeginTx), arg0, arg1)
 }
 
+// Beginx mocks base method.
+func (m *MockAdapter) Beginx() (*sqlx.Tx, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Beginx")
+	ret0, _ := ret[0].(*sqlx.Tx)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Beginx indicates an expected call of Beginx.
+func (mr *MockAdapterMockRecorder) Beginx() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Beginx", reflect.TypeOf((*MockAdapter)(nil).Beginx))
+}
+
 // BindNamed mocks base method.
 func (m *MockAdapter) BindNamed(arg0 string, arg1 interface{}) (string, []interface{}, error) {
 	m.ctrl.T.Helper()
