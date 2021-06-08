@@ -12,7 +12,7 @@ func NewConsumer(
 	logger zlog.Logger,
 	cfg *ConsumerConfig,
 ) Consumer {
-	rdr := cfg.toKafkaReader()
+	rdr := cfg.toKafkaReader(logger)
 	rdr.Stats()
 	return nil
 }

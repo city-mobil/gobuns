@@ -257,7 +257,7 @@ func NewConsumerConfig(prefix string) func() *ConsumerConfig {
 	}
 }
 
-func (c *ConsumerConfig) toKafkaReader() *kafka.Reader {
+func (c *ConsumerConfig) toKafkaReader(logger zlog.Logger) *kafka.Reader {
 	var groupBalancers []kafka.GroupBalancer
 	if c.GroupBalancers != nil {
 		for _, v := range c.GroupBalancers {
@@ -270,7 +270,7 @@ func (c *ConsumerConfig) toKafkaReader() *kafka.Reader {
 		}
 	}
 
-	return kafka.NewReader(kafka.ReaderConfig{
+	readerConfig := kafka.ReaderConfig{
 		Brokers:   c.Brokers,
 		GroupID:   c.GroupID,
 		Topic:     c.Topic,
@@ -309,5 +309,18 @@ func (c *ConsumerConfig) toKafkaReader() *kafka.Reader {
 		ErrorLogger:            nil,
 		IsolationLevel:         kafka.IsolationLevel(c.IsolationLevel),
 		MaxAttempts:            c.MaxAttempts,
-	})
+	}
+
+	if c.LogLevel != zlog.Disabled {
+		readerConfig.Logger = kafka.LoggerFunc(func(fmt string, args ...interface{}) {
+			logger.Level(c.LogLevel).Log().Msgf(fmt, args...)
+		})
+	}
+	if c.ErrorLogLevel != zlog.Disabled {
+		readerConfig.ErrorLogger = kafka.LoggerFunc(func(fmt string, args ...interface{}) {
+			logger.Error().Msgf(fmt, args...)
+		})
+	}
+
+	return kafka.NewReader(readerConfig)
 }
