@@ -49,6 +49,7 @@ type Adapter interface {
 	// BindNamed ...
 	BindNamed(string, interface{}) (string, []interface{}, error)
 	DriverName() string
+	Beginx() (*sqlx.Tx, error)
 	GetContext(context.Context, interface{}, string, ...interface{}) error
 	NamedExec(string, interface{}) (sql.Result, error)
 	NamedExecContext(context.Context, string, interface{}) (sql.Result, error)
@@ -109,6 +110,10 @@ func (s *sqlAdapter) NamedExec(_ string, _ interface{}) (sql.Result, error) {
 }
 
 func (s *sqlAdapter) NamedExecContext(_ context.Context, _ string, _ interface{}) (sql.Result, error) {
+	return nil, ErrNotImplemented
+}
+
+func (s *sqlAdapter) Beginx() (*sqlx.Tx, error) {
 	return nil, ErrNotImplemented
 }
 
