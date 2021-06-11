@@ -1,11 +1,78 @@
 package kafka
 
-import "github.com/city-mobil/gobuns/zlog"
+import (
+	"context"
+	"time"
+
+	"github.com/city-mobil/gobuns/zlog"
+	"github.com/segmentio/kafka-go"
+)
 
 type Consumer interface {
+	Lag() int64
+	ReadLag(context.Context) (int64, error)
+
+	Offset() int64
+	SetOffset(int64) error
+	SetOffsetAt(context.Context, time.Time) error
+
+	CommitMessages(context.Context, ...kafka.Message) error
+	FetchMessage(context.Context) (kafka.Message, error)
+
+	Ping() error
+	Name() string
+	ComponentType() string
+	Close() error
 }
 
 type consumer struct {
+	logger zlog.Logger
+	config *ConsumerConfig
+	reader *kafka.Reader
+}
+
+func (c *consumer) Lag() int64 {
+	return c.reader.Lag()
+}
+
+func (c *consumer) ReadLag(ctx context.Context) (int64, error) {
+	return c.reader.ReadLag(ctx)
+}
+
+func (c *consumer) Offset() int64 {
+	return c.reader.Offset()
+}
+
+func (c *consumer) SetOffset(offset int64) error {
+	return c.reader.SetOffset(offset)
+}
+
+func (c *consumer) SetOffsetAt(ctx context.Context, t time.Time) error {
+	return c.reader.SetOffsetAt(ctx, t)
+}
+
+func (c *consumer) CommitMessages(ctx context.Context, messages ...kafka.Message) error {
+	return c.reader.CommitMessages(ctx, messages...)
+}
+
+func (c *consumer) FetchMessage(ctx context.Context) (kafka.Message, error) {
+	return c.reader.FetchMessage(ctx)
+}
+
+func (c *consumer) Ping() error {
+	return nil
+}
+
+func (c *consumer) Name() string {
+	return "consumer"
+}
+
+func (c *consumer) ComponentType() string {
+	return defaultType
+}
+
+func (c *consumer) Close() error {
+	return c.reader.Close()
 }
 
 func NewConsumer(
@@ -13,6 +80,10 @@ func NewConsumer(
 	cfg *ConsumerConfig,
 ) Consumer {
 	rdr := cfg.toKafkaReader(logger)
-	rdr.Stats()
-	return nil
+
+	return &consumer{
+		logger: logger,
+		config: cfg,
+		reader: rdr,
+	}
 }

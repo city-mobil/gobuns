@@ -86,6 +86,14 @@ func NewConsumerConfig(prefix string) func() *ConsumerConfig {
 		prefix = "kafka."
 	}
 
+	const (
+		consumerDefaultQueueCapacity   = 100
+		consumerDefaultMaxWait         = 5 * time.Second
+		consumerDefaultMinBytes        = 1
+		consumerDefaultMaxBytes        = 0
+		consumerDefaultReadLagInterval = time.Minute
+	)
+
 	o := func(opt string) string {
 		return prefix + opt
 	}
@@ -111,7 +119,7 @@ func NewConsumerConfig(prefix string) func() *ConsumerConfig {
 			0,
 			"Kafka Consumer Partition.",
 		)
-		dialerConfig = newDialerConfig(o("dialer"))
+		dialerConfig = newDialerConfig(o("consumer.dialer"))
 		dialTimeout  = config.Duration(
 			o("consumer.net.dial_timeout"),
 			defaultDialTimeout,
@@ -119,27 +127,27 @@ func NewConsumerConfig(prefix string) func() *ConsumerConfig {
 		)
 		queueCapacity = config.Int(
 			o("consumer.queue_capacity"),
-			0,
+			consumerDefaultQueueCapacity,
 			"Kafka consumer internal queue capacity",
 		)
 		minBytes = config.Int(
 			o("consumer.fetch.min_bytes"),
-			0,
+			consumerDefaultMinBytes,
 			"Kafka consumer min bytes to fetch on each request",
 		)
 		maxBytes = config.Int(
 			o("consumer.fetch.max_bytes"),
-			0,
+			consumerDefaultMaxBytes,
 			"Kafka consumer max bytes to fetch on each request.",
 		)
 		maxWait = config.Duration(
 			o("consumer.max_wait"),
-			0,
+			consumerDefaultMaxWait,
 			"Consumer Max Wait.",
 		)
 		readLagInterval = config.Duration(
 			o("consumer.read_lag_interval"),
-			0,
+			consumerDefaultReadLagInterval,
 			"Consumer frequency at which the reader lag is updated.",
 		)
 		groupBalancers = config.UintSlice(
