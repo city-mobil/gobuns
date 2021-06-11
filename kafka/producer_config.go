@@ -43,16 +43,16 @@ type ProducerConfig struct { //nolint:maligned
 	LogLevel              zlog.Level
 	ErrorLogLevel         zlog.Level
 	Compression           kafka.Compression
-	StatsConfig           *ProducerStatsConfig
+	StatsConfig           *StatsConfig
 	CircuitBreakerConfig  *barber.Config
 	CircuitBreakerEnabled bool
 }
 
 func NewProducerConfig(prefix string) func() *ProducerConfig {
 	if prefix != "" {
-		prefix += ".kafka."
+		prefix += ".kafka.producer."
 	} else {
-		prefix = "kafka."
+		prefix = "kafka.producer."
 	}
 
 	o := func(opt string) string {
@@ -128,7 +128,7 @@ func NewProducerConfig(prefix string) func() *ProducerConfig {
 			int8(defaultLogLevel),
 			"Kafka producer error-logger log level",
 		)
-		statsConfig    = newStatsConfig(prefix)
+		statsConfig    = newStatsConfig("")
 		breakerEnabled = config.Bool(o("breaker.enabled"), defaultCircuitBreakerEnabled, "Kafka circuit breaker mode.")
 		breakerConfig  = barber.NewConfig(o("breaker"))
 	)

@@ -10,26 +10,22 @@ import (
 
 const (
 	defaultStatsCollectionEnabled = true
-	defaultStatsPrefix            = "kafka"
 	defaultStatsRefreshInterval   = time.Second
 )
 
-type ProducerStatsConfig struct {
-	StatsPrefix     string
+type StatsConfig struct {
 	RefreshInterval time.Duration
 	Enabled         bool
 }
 
-func newStatsConfig(prefix string) func() *ProducerStatsConfig {
+func newStatsConfig(prefix string) func() *StatsConfig {
 	var (
-		statsPrefix     = config.String(prefix+"stats.prefix", defaultStatsPrefix, "Kafka producer stats prefix.")
 		enabled         = config.Bool(prefix+"stats.enabled", defaultStatsCollectionEnabled, "Kafka producer stats enabled.")
 		refreshInterval = config.Duration(prefix+"stats.refresh_interval", defaultStatsRefreshInterval, "Kafka producer stats refresh interval")
 	)
 
-	return func() *ProducerStatsConfig {
-		return &ProducerStatsConfig{
-			StatsPrefix:     *statsPrefix,
+	return func() *StatsConfig {
+		return &StatsConfig{
 			RefreshInterval: *refreshInterval,
 			Enabled:         *enabled,
 		}
@@ -41,59 +37,63 @@ type producerStats struct {
 	messagesCounter *promlib.Event
 	bytesCounter    *promlib.Event
 	errorsCounter   *promlib.Event
-	batchTimeAvg    promlib.Gauge
-	batchTimeMax    promlib.Gauge
+	batchTimeAvg    promlib.GaugeVec
+	batchTimeMax    promlib.GaugeVec
 }
 
 func (s *producerStats) updateFromStats(st *kafka.WriterStats) {
-	promlib.AddCntEvent(s.writesCounter, float64(st.Writes))
-	promlib.AddCntEvent(s.messagesCounter, float64(st.Messages))
-	promlib.AddCntEvent(s.bytesCounter, float64(st.Bytes))
-	promlib.AddCntEvent(s.errorsCounter, float64(st.Errors))
-	s.batchTimeAvg.Set(float64(st.BatchTime.Avg.Milliseconds()))
-	s.batchTimeMax.Set(float64(st.BatchTime.Max.Milliseconds()))
+	labels := promlib.Labels{
+		"topic": st.Topic,
+	}
+
+	promlib.AddCntEventWithLabels(s.writesCounter, labels, float64(st.Writes))
+	promlib.AddCntEventWithLabels(s.messagesCounter, labels, float64(st.Messages))
+	promlib.AddCntEventWithLabels(s.bytesCounter, labels, float64(st.Bytes))
+	promlib.AddCntEventWithLabels(s.errorsCounter, labels, float64(st.Errors))
+	s.batchTimeAvg.Set(float64(st.BatchTime.Avg.Milliseconds()), st.Topic)
+	s.batchTimeMax.Set(float64(st.BatchTime.Max.Milliseconds()), st.Topic)
 }
 
-func newProducerStats(name string) *producerStats {
+func newProducerStats() *producerStats {
 	prefix := "kafka_producer_"
 
 	return &producerStats{
 		writesCounter: &promlib.Event{
-			Name:      prefix + "count_writes",
+			Name:      prefix + "writes_count",
 			Namespace: promlib.GetGlobalNamespace(),
 			Help:      "Kafka producer writes count",
 		},
 		messagesCounter: &promlib.Event{
-			Name:      prefix + "count_messages",
+			Name:      prefix + "messages_count",
 			Namespace: promlib.GetGlobalNamespace(),
 			Help:      "Kafka producer messages sent count",
 		},
 		bytesCounter: &promlib.Event{
-			Name:      prefix + "count_bytes",
+			Name:      prefix + "_count_bytes",
 			Namespace: promlib.GetGlobalNamespace(),
 			Help:      "Kafka producer bytes sent count",
 		},
 		errorsCounter: &promlib.Event{
-			Name:      prefix + "count_errors",
+			Name:      prefix + "_count_errors",
 			Namespace: promlib.GetGlobalNamespace(),
 			Help:      "Kafka producer errors count",
 		},
-		batchTimeAvg: promlib.NewGauge(
+		batchTimeAvg: promlib.NewGaugeVec(
 			promlib.GaugeOptions{
 				MetaOpts: promlib.MetaOpts{
 					Namespace: promlib.GetGlobalNamespace(),
-					Name:      prefix + "batch_time_avg",
+					Name:      prefix + "_batch_time_avg",
 					Help:      "Kafka producer maximum batch time",
 				},
-			}),
-		batchTimeMax: promlib.NewGauge(
+			}, additionalLabels),
+		batchTimeMax: promlib.NewGaugeVec(
 			promlib.GaugeOptions{
 				MetaOpts: promlib.MetaOpts{
 					Namespace: promlib.GetGlobalNamespace(),
-					Name:      prefix + "batch_time_max",
+					Name:      prefix + "_batch_time_max",
 					Help:      "Kafka producer maximum batch time",
 				},
-			},
+			}, additionalLabels,
 		),
 	}
 }

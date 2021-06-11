@@ -129,28 +129,6 @@ func (p *producer) Close() error {
 	return p.writer.Close()
 }
 
-func (p *producer) runStatsUpdater() {
-	if !p.config.StatsConfig.Enabled {
-		return
-	}
-
-	go func() {
-		t := time.NewTicker(p.config.StatsConfig.RefreshInterval)
-		defer t.Stop()
-
-		for {
-			select {
-			case <-t.C:
-				st := p.writer.Stats()
-				p.stats.updateFromStats(&st)
-
-			case <-p.stop:
-				return
-			}
-		}
-	}()
-}
-
 func newWriter(logger zlog.Logger, cfg *ProducerConfig) *kafka.Writer {
 	writer := cfg.toKafkaWriter()
 
@@ -200,11 +178,20 @@ func NewAsyncProducer(
 		logger:  logger,
 		config:  cfg,
 		writer:  writer,
-		stats:   newProducerStats(cfg.StatsConfig.StatsPrefix),
+		stats:   newProducerStats(),
 		stop:    make(chan struct{}),
 		breaker: breaker,
 	}
-	p.runStatsUpdater()
+
+	updater := &statsUpdater{
+		refreshInterval: cfg.StatsConfig.RefreshInterval,
+		stop:            p.stop,
+		enabled:         cfg.StatsConfig.Enabled,
+	}
+	updater.run(func() {
+		st := p.writer.Stats()
+		p.stats.updateFromStats(&st)
+	})
 
 	return p
 }
@@ -221,11 +208,20 @@ func NewSyncProducer(logger zlog.Logger, cfg *ProducerConfig) Producer {
 		logger:  logger,
 		config:  cfg,
 		writer:  writer,
-		stats:   newProducerStats(cfg.StatsConfig.StatsPrefix),
+		stats:   newProducerStats(),
 		stop:    make(chan struct{}),
 		breaker: barber.NewBarber([]int{breakerServerID}, cfg.CircuitBreakerConfig),
 	}
-	p.runStatsUpdater()
+
+	updater := &statsUpdater{
+		refreshInterval: cfg.StatsConfig.RefreshInterval,
+		stop:            p.stop,
+		enabled:         cfg.StatsConfig.Enabled,
+	}
+	updater.run(func() {
+		st := p.writer.Stats()
+		p.stats.updateFromStats(&st)
+	})
 
 	return p
 }

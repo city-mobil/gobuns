@@ -8,10 +8,11 @@ type GaugeVec struct {
 
 func NewGaugeVec(opts GaugeOptions, labels []string) GaugeVec {
 	gaugeMetric := prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: opts.Namespace,
-		Subsystem: opts.Subsystem,
-		Name:      opts.Name,
-		Help:      opts.Help,
+		Namespace:   opts.Namespace,
+		Subsystem:   opts.Subsystem,
+		Name:        opts.Name,
+		Help:        opts.Help,
+		ConstLabels: opts.ConstLabels,
 	}, labels)
 	prometheus.MustRegister(gaugeMetric)
 

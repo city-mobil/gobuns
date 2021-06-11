@@ -31,6 +31,7 @@ type ConsumerConfig struct {
 	Topic                  string
 	Partition              int
 	DialerConfig           *ConsumerDialerConfig
+	StatsConfig            *StatsConfig
 	DialTimeout            time.Duration
 	QueueCapacity          int
 	MinBytes               int
@@ -81,9 +82,9 @@ func newDialerConfig(prefix string) func() *ConsumerDialerConfig {
 
 func NewConsumerConfig(prefix string) func() *ConsumerConfig {
 	if prefix != "" {
-		prefix += ".kafka."
+		prefix += ".kafka.consumer."
 	} else {
-		prefix = "kafka."
+		prefix = "kafka.consumer."
 	}
 
 	const (
@@ -230,6 +231,7 @@ func NewConsumerConfig(prefix string) func() *ConsumerConfig {
 			int8(defaultLogLevel),
 			"Kafka consumer error-logger log level.",
 		)
+		statsConfig = newStatsConfig(o("consumer."))
 	)
 
 	return func() *ConsumerConfig {
@@ -261,6 +263,7 @@ func NewConsumerConfig(prefix string) func() *ConsumerConfig {
 			MaxAttempts:            *maxAttempts,
 			LogLevel:               zlog.Level(*logLevel),
 			ErrorLogLevel:          zlog.Level(*errorLogLevel),
+			StatsConfig:            statsConfig(),
 		}
 	}
 }

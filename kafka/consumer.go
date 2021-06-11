@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/city-mobil/gobuns/zlog"
@@ -26,9 +27,12 @@ type Consumer interface {
 }
 
 type consumer struct {
-	logger zlog.Logger
-	config *ConsumerConfig
-	reader *kafka.Reader
+	logger     zlog.Logger
+	config     *ConsumerConfig
+	reader     *kafka.Reader
+	stats      *consumerStats
+	onceCloser sync.Once
+	stop       chan struct{}
 }
 
 func (c *consumer) Lag() int64 {
@@ -81,9 +85,23 @@ func NewConsumer(
 ) Consumer {
 	rdr := cfg.toKafkaReader(logger)
 
-	return &consumer{
+	c := &consumer{
 		logger: logger,
 		config: cfg,
 		reader: rdr,
+		stats:  newConsumerStats(),
+		stop:   make(chan struct{}),
 	}
+
+	updater := &statsUpdater{
+		refreshInterval: cfg.StatsConfig.RefreshInterval,
+		stop:            c.stop,
+		enabled:         cfg.StatsConfig.Enabled,
+	}
+	updater.run(func() {
+		st := rdr.Stats()
+		c.stats.updateFromStats(&st)
+	})
+
+	return c
 }
