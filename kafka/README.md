@@ -1,22 +1,21 @@
 # Kafka
 
-Пакет для работы с Apache Kafka.
+Package for Apache Kafka usage.
 
-## Описание структур и интерфейсов
+## Structs and interfaces descriptions
 
 ### Producer interface
 
-Интерфейс, который используется для работы с 
-кафка для передачи сообщений.
+Interface which is used for working with Kafka for producing messages.
 
-_Producer_ может быть **асинхронным**(вызывающая функция _Produce_ не ждёт подтверждений(Acknowledge) от Kafka) 
-или же **синхронным**(вызывающая функция _Produce_ ждёт подтверждений(Acknowledge) от Kafka).
+_Producer_ might be **async**(calling function _Produce_ does not wait for Acknowledges from Kafka) 
+or **sync**(calling function _Produce_ waits for Acknowledges from Kafka).
 
 #### Produce
 
-Отправляет сообщения в Kafka.
+Produces message(s) to Kafka.
 
-##### Пример использования
+##### Usage example
 
 ```go
 err := someProducer.Produce(ctx, []kafka.Message{
@@ -24,165 +23,156 @@ err := someProducer.Produce(ctx, []kafka.Message{
     },
 })
 if err != nil {
-    // Обработка ошибки
+    // handle error
 }
 ```
 
 #### SetCompletionCallback
 
-##### Пример использования
+##### Usage Example
 
 ```go
 someProducer.SetCompletionCallback(func(msgs []kafka.Message, err error) {
     if err == nil {
         return
     }
-    // Какие-то действия по обработке сообщений и ошибок
+    // some callback handling.
 })
 ```
 
 #### Close
 
-##### Пример использования
+##### Usage example
 
 ```go
 err := p.Close()
 if err != nil {
-    // Обработка ошибки
+    // handle error
 }
 ```
 
 ### NewAsyncProducer
-Создаёт и инициализирует новый **асинхронный** продьюсер.
+Creates and initializes new **async** producer.
 
-Особенность асинхронного продьюсера состоит в том, что после отправки сообщений(_Produce_) вызывающая сторона
-(в данном случае -- клиент) не дожидается подтверждений о доставке сообщений в Kafka.
+Caller does not wait for delivery result from producer if asynchronous producer is used.
 
-Для обработки ошибок и сообщений о доставке **обязательно** нужно установить callback при помощи
-_SetCompletionCallback_, иначе информация о доставке будет **потеряна**. Для того, чтобы не забыть, перед каждой 
-отправкой, в случае отсутствия CompletionCallback, будет написано сообщение
-в лог с уровнем **WARN**.
+For handling errors and delivery results _SetCompletionCallback_ **must** be set. Otherwise, delivery results
+and errors are lost. 
 
 ### NewSyncProducer
 
-Создаёт и инициализирует новый **синхронный** продьюсер.
+Creates and initializes new **sync** producer.
 
-Особенность синхронного продьюсера состоит в том, что после отправки сообщений(_Produce_) вызывающая сторона(в данном случае -- клиент)
-дожидается подтверждений о доставке сообщений в Kafka. 
+Caller waits for delivery result from producer if synchronous producer is used.
 
-Для обработки ошибок и сообщений о доставке не нужно устанавливать callback при помощи _SetCompletionCallback_. Достаточно
-только проверить ошибку и правильно её обработать(см. examples)
+For handling errors and delivery results _SetCompletionCallback_ should not be set(see examples).
 
-## Конфигурация Producer
+## Producer configuration
 
-Содержится в структуре ProducerConfig.
+Is stored at ProducerConfig.
 
 ### Addr (producer.brokers)
-Адреса брокеров Kafka.
+Kafka brokers addresses.
 
 ### Balancer (producer.balancer)
-Балансировщик, который используется для распределения сообщений
-по партициям. 
+Balancer, which is used for messages distribution through partitions.
 
-**Рекомендуемое значение**: "roundrobin" (или пустое)
+**Recommended value**: "roundrobin" (or empty)
 
-**Возможные значения**: "roundrobin", "murmur2", "crc32"
+**Possible values**: "roundrobin", "murmur2", "crc32"
 
-**Стандартное значение**: "roundrobin"
+**Standard value**: "roundrobin"
 
-### Важно: MaxRetries (producer.max_retries)
+### Important: MaxRetries (producer.max_retries)
 
-Аналог опции 'retries' из librdkafka.
+'Retries' option analogue from librdkafka.
 
-Максимальное количество попыток отправки сообщения, 
-находящегося внутри очереди продьюсера, в случае возникновения ошибок.
+Maximum attempts count for sending a single message.
 
-**ВАЖНО**: [Список ошибок без повторной отправки](https://kafka.apache.org/protocol#protocol_error_codes)
+**IMPORTANT**: [Errors list without message send retries](https://kafka.apache.org/protocol#protocol_error_codes)
 
-**Рекомендуемое значение**: 3
+**Recommended value**: 3
 
-**Стандартное значение**: 3
+**Standard value**: 3
 
-### Важно: QueueMaxMessages (producer.queue.max_messages):
+### Important: QueueMaxMessages (producer.queue.max_messages):
 
-Аналог опции 'queue.buffering.max.messages' из librdkafka.
+'Queue.buffering.max.messages' analogue from librdkafka.
 
-Максимальное количество сообщений внутри _локальной_ очереди продьюсера.
+Maximum messages count in _local_ producer queue.
 
-В случае превышения порога, сразу же происходит отправка в Kafka.
+If maximum count is reached, messages are sent to Kafka.
 
-**Рекомендуемое значение для синхронного продьюсера**: _10000_
+**Recommended value for sync producer**: _10000_
 
-**Стандартное значение**: _10000_
+**Standard value**: _10000_
 
-### Важно: QueueMaxBytesSize (producer.queue.max_bytes)
+### Important: QueueMaxBytesSize (producer.queue.max_bytes)
 
-Аналог опции 'queue.buffering.max.kbytes' из librdkafka.
+'Queue.buffering.max.kbytes' option analogue from librdkafka.
 
-Максимальный размер _локальной_ очереди продьюсера в байтах(!)
+Maximum producer _local_ queue size in bytes(!)
 
-В случае превышения порога, сразу же происходит отправка в Kafka
+If maximum count is reached, messages are sent to Kafka.
 
-**Рекомендуемое значение для синхронного продьюсера**: 1048576 (1 МБ)
+**Recommended value for sync producer**: 1048576 (1 МБ)
 
-**Стандартное значение**: 1048576 (1 МБ)
+**Standard value**: 1048576 (1 МБ)
 
-### Важно: QueueBufferingTimeout (producer.queue.buffering_timeout)
+### Important: QueueBufferingTimeout (producer.queue.buffering_timeout)
 
-Аналог опции 'queue.buffering.max.ms' из librdkafka.
+'Queue.buffering.max.ms' option analogue from librdkafka.
 
-Максимальное время ожидания наполнения _локального_ буфера продьюсера.
+Maximum wait time for _local_ producer queue is being filled.
 
-#### Как выбрать оптимальный баланс этой опции?
+#### What is the best QueueBufferingTimeout option?
 
 Когда выбирается значение опции, нужно исходить из следующих правил:
 
-В асинхронном продьюсере: **Увеличение значения ведёт к увеличению использования RAM(RSS), уменьшение -- к увеличению использования CPU**
+When you're trying to choose option value, you have to consider these conditions:
 
-В синхронном продьюсере: **Увеличение значение ведёт к увеличению RTT(Round-Trip-Time), уменьшение -- к увеличению использования CPU**
+For asynchronous producer: **Increase of this option value leads to increased RAM(RSS) usage, decrease leads to increased CPU usage**
 
-Это возникает по следующим причинам:
+For synchronous producer: **Увеличение значение ведёт к увеличению RTT(Round-Trip-Time), уменьшение -- к увеличению использования CPU**
 
-1. Для асинхронного продьюсера: Увеличение памяти происходит из-за того, что объекты начинают дольше жить(время от аллокации 
-   до сборки сборщиком мусора увеличивается). Из-за этого увеличивается количество потребляемой памяти(больше объектов --
-   больше памяти).
+It happens due to these reasons:
+
+1. For asynchronous producer: increased memory usage occurs because objects start to live in memory for a 
+   longer period of time(GC does not collect objects because some references left). It leads to more RAM(RSS) usage.
    
+2. For asynchronous producer: increased CPU usage occurs because more I/O(Input/Output) operations appear. Increased
+System CPU Usage can be observed on CPU Usage dashboards.
 
-2. Для асинхронного продьюсера: увеличение использования CPU происходит из-за того, что появляется больше I/O(Input/Output).
-   На графиках CPU Usage можно будет увидеть увеличение System CPU Usage(то время, которое процессор проводит в syscall(системный вызов)).
+3. For synchronous producer: increased RTT(Round-Trip-Time) can be observed because _Producer_ caller has
+to wait for buffer filling + RTT itself.
    
+4. For synchronous producer: decreasing QueueBufferingTimeout option leads to CPU Usage increase just like in p.2
 
-3. Для синхронного продьюсера: увеличение RTT(Round-Trip-Time(время похода туда/обратно)) увеличивается из-за того,
-что теперь пользователю, вызывающему _Produce_ приходится ждать время заполнения буфера + время сетевого похода. Увеличивается время заполнения буфера --
-   увеличивается время ожидания конечного пользователя
-   
-4. Для синхронного продьюсера: уменьшение приводит к увеличению использования CPU по той же причине, что и в п.2
+**Recommended value for synchronous producer**: 10ms
 
-**Рекомендуемое значение для синхронного продьюсера**: 10ms
+**Recommended value for asynchronous producer**: 100ms
 
-**Рекомендуемое значение для асинхронного продьюсера**: 100ms
-
-**Стандартное значение**: 20ms
+**Standard value**: 20ms
 
 ### ReadTimeout (producer.net.read_timeout)
 
-Время чтения ответа по сети.
+Network read timeout.
 
-**Стандартное значение**: 3s
+**Standard value**: 3s
 
 ### WriteTimeout (producer.net.write_timeout)
 
-Время записи данных в сеть(таймаут продьюсинга)
+Network write timeout.
 
-**Стандартное значение**: 3s
+**Standard value**: 3s
 
 ### DialTimeout (producer.net.dial_timeout)
 
-Время подключения к брокерам кафка
+Timeout for Kafka broker connections.
 
-**Стандартное значение**: 3s
+**Standard value**: 3s
 
-### Важно: RequiredAcks (producer.required_acks)
+### Important: RequiredAcks (producer.required_acks)
 
 Аналог опции 'request.required.acks' из librdkafka.
 
