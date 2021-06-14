@@ -29,7 +29,7 @@ if err != nil {
 
 #### SetCompletionCallback
 
-##### Usage Example
+##### Example
 
 ```go
 someProducer.SetCompletionCallback(func(msgs []kafka.Message, err error) {
@@ -174,66 +174,66 @@ Timeout for Kafka broker connections.
 
 ### Important: RequiredAcks (producer.required_acks)
 
-Аналог опции 'request.required.acks' из librdkafka.
+'Request.required.acks' option analogue from librdkafka.
 
-Количество подтверждений от брокеров для одного доставленного сообщения. 
+Acknowledges required from brokers for one delivered message.
 
-Может иметь 3 значения
+Can have 3 values:
 
-**0**: продьюсер не ожидает подтверждения от брокера (очень ненадёжная доставка, можно условно сравнить с асинхронной репликацией)
+**0**: producer does not wait for any acknowledges from broker(similar to asynchronous replication, not reliable delivery).
 
-**-1**: продьюсер ожидает подтверждения от всех брокеров (очень надёжная доставка, можно условно сравнить с синхронной репликацией)
+**-1**: producer waits for acknowledges from **all** brokers (very reliable delivery).
 
-**1-N**: продьюсер ожидает подтверждения от N брокеров (надёжная доставка, чаще всего ACK от одного брокера хватает)
+**1-N**: producer is waiting for acknowledges from **N** brokers (reliable delivery).
 
-**Стандартное значение**: 1
+**Standard value**: 1
 
-**Рекомендуемое значение**: 1
+**Recommended value**: 1
 
 ### Compression (producer.compression)
 
-Включение сжатия сообщений.
+Enables compression for messages.
 
-**Стандартное значение**: 0 (выключено)
+**Standard value**: 0 (disabled)
 
 ### LogLevel (log.level)
 
-Уровень логирования успешных сообщений.
+Log level for successful deliveries.
 
-**Стандартное значение**: 8 (выключено)
+**Standard value**: 8 (disabled)
 
 ### ErrorLogLevel (log.errors_level)
 
-Уровень логирования сообщений об ошибке
+Log level for messages with error.
 
-**Стандартное значение**: 8 (выключено)
+**Standard value**: 8 (disabled)
 
 ### StatsConfig
 
-Конфигурация для сбора статистики использования продьюсера Kafka.
+Configuration for statistics collection of Kafka producer.
 
 #### StatsPrefix
 
-Префикс для Prometheus метрик
+Prometheus' metrics prefix.
 
-**Стандартное значение**: "" (пустая строка)
+**Standard value**: "" (empty string)
 
 #### Enabled
 
-Включение сборки метрик
+Enables internal producer metrics collection.
 
-**Стандартное значение**: true (включено)
+**Standard value**: true (enabled)
 
 #### RefreshInterval
 
-Интервал сбора метрик
+Metrics collection interval.
 
-**Стандартное значение**: 1s
+**Standard value**: 1s
 
 ### Circuit Breaker
 
-Позволяет настроить Circuit Breaker, который будет срабатывать 
-при превышении порога ошибок `max_fails` в заданный интервал времени `threshold`.
+Allows to setup Circuit Breaker, which enabled if 
+`max_fails` is exceeded for `threshold` period of time.
 
 ```yaml
 breaker:
@@ -242,53 +242,54 @@ breaker:
   max_fails: 10
 ```
 
-### Пример использования
+### Examples
 ```go
 
 cfg := kafka.NewProducerConfig("")
 
-// Вызываем инициализацию конфигурации go-buns
+// Gobuns configuration initialization.
 config.InitOnce()
 
-// Инициализируем Producer (в данном случае -- асинхронный)
+// Initialize asynchronous producer.
 producer := kafka.NewAsyncProducer(someZLogLogger, cfg)
 ```
 
-## Рекомендации
+## Recommendations
 
-### Рекомендации по использованию queue.* ручек
-#### Синхронный продьюсер:
+### Recommendations for queue.* options usage
+#### Synchronous producer:
 
-1. В случае большой нагрузки, следует чуть-чуть увеличить время заполнения очереди(например, с 10мс до 12мс). Это позволит
-немножко сэкономить на использовании процессорных ресурсов засчёт увеличения времени отклика.
+1. In case of heavy load, it is recommended to increase queue.buffering_timeout(for example, from 10ms to 12ms). It allows
+to save some CPU resources.
+ 
+2. In case of not heavy load and when data delivery does not affect some business processes, it is recommended
+to use asynchronous delivery with increase queue.buffering_timeout(for example, from 10ms with sync to 100ms with async producer).
+
+**Dont forget to handle delivery result callback!**
    
+#### Asynchronous producer:
 
-2. В случае небольшой нагрузки и когда доставка данных не особо влияет на бизнес-процессы, рекомендуется перейти на асинхронный
-продьюсер с увеличенным queue.buffering_timeout(например, вместо 10мс с синхронного можно перейти на 100мс асинхронного).
-   **Не забывайте обрабатывать callback о доставке!**
-   
-#### Асинхронный продьюсер:
+1. Always set delivery result _callback_ with _SetCompletionCallback_. It allows getting information from Kafka producer about
+delivery results.
 
-1. Всегда выставляйте _callback_ о доставке при помощи _SetCompletionCallback_. Это позволит получать информацию о 
+### General recommendations
+1. Always write multiple messages at once(Batching). In case of synchronous producer it allows spending less time waiting for delivery.
 
-### Общие рекомендации
-1. Всегда пишите несколько сообщений(ака Batching). В случае синхронного продьюсера это позволит меньше времени ожидать
-подтверждения отправки.
+### Recommended configuration
 
-### Рекомендуемая конфигурация
-
-Асинхронный продьюсер:
+Asynchronous producer:
 
 ```yaml
 kafka:
   producer:
-    brokers: '127.0.0.1:9092' # любой хост.
+    brokers: # any host list.
+       - '127.0.0.1:9092'
+       - '127.0.0.1:9092'
     balancer: "roundrobin"
     queue:
       max_messages: 10000
       max_bytes: 1048576
-      buffering_timeout: 100ms # Увеличивайте или уменьшайте эту опцию в зависимости от нагрузки. В случае
-      # вопросов напишите @a.petrukhin или в #sre_support
+      buffering_timeout: 100ms
     net:
       read_timeout: 3s
       dial_timeout: 3s
@@ -305,18 +306,19 @@ kafka:
      max_fails: 10
 ```
 
-Синхронный продьюсер:
+Synchronous producer:
 
 ```yaml
 kafka:
   producer:
-    brokers: '127.0.0.1:9092' # любой хост.
+    brokers: 
+      - '127.0.0.1:9092' # any host.
+      - '127.0.0.1:9092'
     balancer: "roundrobin"
     queue:
       max_messages: 10000
       max_bytes: 1048576
-      buffering_timeout: 10ms # Увеличивайте или уменьшайте эту опцию в зависимости от нагрузки. В случае
-      # вопросов напишите @a.petrukhin
+      buffering_timeout: 10ms
     net:
       read_timeout: 3s
       dial_timeout: 3s
