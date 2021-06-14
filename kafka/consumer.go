@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
@@ -78,9 +79,26 @@ type Consumer interface {
 	// Use CommitMessages to commit the offset.
 	FetchMessage(context.Context) (kafka.Message, error)
 
+	// Ping performs one single healthcheck.
 	Ping() error
+
+	// Name returns name for healthcheck.
+	//
+	// See https://tools.ietf.org/id/draft-inadarei-api-health-check-01.html for more information.
 	Name() string
+
+	// ComponentType returns component type for healthcheck.
+	//
+	// See https://tools.ietf.org/id/draft-inadarei-api-health-check-01.html for more information.
 	ComponentType() string
+
+	// ComponentID returns component type for healthcheck.
+	//
+	// See https://tools.ietf.org/id/draft-inadarei-api-health-check-01.html for more information.
+	ComponentID() string
+
+	// Close closes the stream, preventing the program from reading any more
+	// messages from it.
 	Close() error
 }
 
@@ -91,6 +109,10 @@ type consumer struct {
 	stats      *consumerStats
 	onceCloser sync.Once
 	stop       chan struct{}
+}
+
+func (c *consumer) ComponentID() string {
+	return strings.Join(c.config.Brokers, ",")
 }
 
 func (c *consumer) ReadMessage(ctx context.Context) (kafka.Message, error) {
@@ -130,7 +152,7 @@ func (c *consumer) Ping() error {
 }
 
 func (c *consumer) Name() string {
-	return "consumer"
+	return defaultConsumerName
 }
 
 func (c *consumer) ComponentType() string {

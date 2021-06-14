@@ -17,8 +17,9 @@ const (
 )
 
 const (
-	defaultName = "producer"
-	defaultType = "kafka"
+	defaultConsumerName = "consumer"
+	defaultProducerName = "producer"
+	defaultType         = "kafka"
 )
 
 var (
@@ -35,9 +36,22 @@ type Producer interface {
 	// For synchronous producer this callback is never called.
 	SetCompletionCallback(CompletionCallback)
 
+	// Ping performs one single healthcheck.
 	Ping() error
+
+	// Name returns name for healthcheck.
+	//
+	// See https://tools.ietf.org/id/draft-inadarei-api-health-check-01.html for more information.
 	Name() string
+
+	// ComponentType returns component type for healthcheck.
+	//
+	// See https://tools.ietf.org/id/draft-inadarei-api-health-check-01.html for more information.
 	ComponentType() string
+
+	// ComponentID returns component type for healthcheck.
+	//
+	// See https://tools.ietf.org/id/draft-inadarei-api-health-check-01.html for more information.
 	ComponentID() string
 
 	// Close closes underlying producer.
@@ -106,7 +120,7 @@ func (p *producer) Ping() error {
 }
 
 func (p *producer) Name() string {
-	return defaultName
+	return defaultProducerName
 }
 
 func (p *producer) ComponentType() string {
