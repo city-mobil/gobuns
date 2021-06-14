@@ -334,3 +334,38 @@ kafka:
      threshold: 5
      max_fails: 10
 ```
+
+### Consumer interface
+
+Interface which is used for working with Kafka for consuming messages.
+
+#### Lag
+Return the lag of the last message returned by ReadMessage.
+
+#### ReadLag
+ReadLag returns the current lag of the reader by fetching the last offset of
+the topic and partition and computing the difference between that value and
+the offset of the last message returned by ReadMessage.
+
+#### Offset
+Offset returns the current absolute offset of the reader, or -1
+if r is backed by a consumer group.
+
+#### SetOffset
+SetOffset changes the offset from which the next batch of messages will be
+read. 
+
+#### SetOffsetAt
+SetOffsetAt changes the offset from which the next batch of messages will be
+read given the timestamp t.
+
+#### CommitMessages
+CommitMessages commits the list of messages passed as argument. The program
+may pass a context to asynchronously cancel the commit operation when it was
+configured to be blocking.
+
+#### ReadMessage
+ReadMessage reads and return the next message from the r.
+
+#### FetchMessage
+FetchMessage reads and return the next message from the r.

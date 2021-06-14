@@ -9,7 +9,8 @@ import (
 func NewProducerHealthCheckCallback(p Producer) health.CheckCallback {
 	return func(ctx context.Context) *health.CheckResult {
 		status := health.CheckStatusFail
-		if err := p.Ping(); err == nil {
+		err := p.Ping()
+		if err == nil {
 			status = health.CheckStatusPass
 		}
 
@@ -17,6 +18,24 @@ func NewProducerHealthCheckCallback(p Producer) health.CheckCallback {
 			ComponentID:   p.ComponentID(),
 			ComponentType: p.ComponentType(),
 			Status:        status,
+			Error:         err,
+		}
+	}
+}
+
+func NewConsumerHealthCheckCallback(c Consumer) health.CheckCallback {
+	return func(ctx context.Context) *health.CheckResult {
+		status := health.CheckStatusFail
+		err := c.Ping()
+		if err == nil {
+			status = health.CheckStatusPass
+		}
+
+		return &health.CheckResult{
+			ComponentID:   c.ComponentID(),
+			ComponentType: c.ComponentType(),
+			Status:        status,
+			Error:         err,
 		}
 	}
 }
