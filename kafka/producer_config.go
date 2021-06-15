@@ -7,7 +7,6 @@ import (
 	"github.com/city-mobil/gobuns/barber"
 	"github.com/city-mobil/gobuns/config"
 	"github.com/city-mobil/gobuns/zlog"
-
 	"github.com/segmentio/kafka-go"
 )
 
@@ -51,9 +50,9 @@ type ProducerConfig struct { //nolint:maligned
 
 func NewProducerConfig(prefix string) func() *ProducerConfig {
 	if prefix != "" {
-		prefix += ".kafka."
+		prefix += ".kafka.producer."
 	} else {
-		prefix = "kafka."
+		prefix = "kafka.producer."
 	}
 
 	o := func(opt string) string {
@@ -129,7 +128,7 @@ func NewProducerConfig(prefix string) func() *ProducerConfig {
 			int8(defaultLogLevel),
 			"Kafka producer error-logger log level",
 		)
-		statsConfig    = newStatsConfig(prefix)
+		statsConfig    = newStatsConfig("")
 		breakerEnabled = config.Bool(o("breaker.enabled"), defaultCircuitBreakerEnabled, "Kafka circuit breaker mode.")
 		breakerConfig  = barber.NewConfig(o("breaker"))
 	)

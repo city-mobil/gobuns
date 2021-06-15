@@ -1,4 +1,4 @@
-package main
+package consumer
 
 import (
 	"context"
@@ -7,31 +7,32 @@ import (
 	"os"
 	"time"
 
-	"github.com/city-mobil/gobuns/config"
 	"github.com/city-mobil/gobuns/graceful"
+
 	"github.com/city-mobil/gobuns/health"
-	"github.com/city-mobil/gobuns/kafka"
-	"github.com/city-mobil/gobuns/zlog"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	kf "github.com/segmentio/kafka-go"
+
+	"github.com/city-mobil/gobuns/zlog"
+
+	"github.com/city-mobil/gobuns/config"
+	"github.com/city-mobil/gobuns/kafka"
 )
 
 func main() {
-	cfg := kafka.NewProducerConfig("")
+	cfg := kafka.NewConsumerConfig("")
 	err := config.InitOnce()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	logger := zlog.New(os.Stdout)
-	producer := kafka.NewSyncProducer(logger, cfg())
-
+	consumer := kafka.NewConsumer(logger, cfg())
 	ch := health.NewChecker(health.CheckerOptions{
 		ReleaseID: "1",
-		ServiceID: "sync_producer",
+		ServiceID: "consumer",
 		Version:   "v1.0.0",
 	})
-	ch.AddCallback("kafka:producer", kafka.NewProducerHealthCheckCallback(producer))
+	ch.AddCallback("kafka:consumer", kafka.NewConsumerHealthCheckCallback(consumer))
 
 	http.HandleFunc("/health", health.NewHandler(ch, "health"))
 	http.Handle("/metrics", promhttp.Handler())
@@ -45,15 +46,11 @@ func main() {
 
 	go func() {
 		for {
-			err = producer.Produce(context.Background(), []kf.Message{
-				{
-					Topic: "orders",
-					Value: []byte("some_value"),
-				},
-			}...)
+			msg, err := consumer.FetchMessage(context.Background())
 			if err != nil {
 				logger.Err(err).Send()
 			}
+			logger.Info().Bytes("message", msg.Value).Msg("got message")
 			time.Sleep(10 * time.Millisecond)
 		}
 	}()

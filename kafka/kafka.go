@@ -17,8 +17,9 @@ const (
 )
 
 const (
-	defaultName = "producer"
-	defaultType = "kafka"
+	defaultConsumerName = "consumer"
+	defaultProducerName = "producer"
+	defaultType         = "kafka"
 )
 
 var (
@@ -35,9 +36,22 @@ type Producer interface {
 	// For synchronous producer this callback is never called.
 	SetCompletionCallback(CompletionCallback)
 
+	// Ping performs one single healthcheck.
 	Ping() error
+
+	// Name returns name for healthcheck.
+	//
+	// See https://tools.ietf.org/id/draft-inadarei-api-health-check-01.html for more information.
 	Name() string
+
+	// ComponentType returns component type for healthcheck.
+	//
+	// See https://tools.ietf.org/id/draft-inadarei-api-health-check-01.html for more information.
 	ComponentType() string
+
+	// ComponentID returns component type for healthcheck.
+	//
+	// See https://tools.ietf.org/id/draft-inadarei-api-health-check-01.html for more information.
 	ComponentID() string
 
 	// Close closes underlying producer.
@@ -53,7 +67,7 @@ type producer struct {
 	config                *ProducerConfig
 	writer                *kafka.Writer
 	breaker               barber.Barber
-	stats                 *stats
+	stats                 *producerStats
 	completionCallbackSet uint32
 
 	onceCloser sync.Once
@@ -106,7 +120,7 @@ func (p *producer) Ping() error {
 }
 
 func (p *producer) Name() string {
-	return defaultName
+	return defaultProducerName
 }
 
 func (p *producer) ComponentType() string {
@@ -127,28 +141,6 @@ func (p *producer) Close() error {
 		close(p.stop)
 	})
 	return p.writer.Close()
-}
-
-func (p *producer) runStatsUpdater() {
-	if !p.config.StatsConfig.Enabled {
-		return
-	}
-
-	go func() {
-		t := time.NewTicker(p.config.StatsConfig.RefreshInterval)
-		defer t.Stop()
-
-		for {
-			select {
-			case <-t.C:
-				st := p.writer.Stats()
-				p.stats.updateFromStats(&st)
-
-			case <-p.stop:
-				return
-			}
-		}
-	}()
 }
 
 func newWriter(logger zlog.Logger, cfg *ProducerConfig) *kafka.Writer {
@@ -200,11 +192,20 @@ func NewAsyncProducer(
 		logger:  logger,
 		config:  cfg,
 		writer:  writer,
-		stats:   newProducerStats(cfg.StatsConfig.StatsPrefix),
+		stats:   newProducerStats(),
 		stop:    make(chan struct{}),
 		breaker: breaker,
 	}
-	p.runStatsUpdater()
+
+	updater := &statsUpdater{
+		refreshInterval: cfg.StatsConfig.RefreshInterval,
+		stop:            p.stop,
+		enabled:         cfg.StatsConfig.Enabled,
+	}
+	updater.run(func() {
+		st := p.writer.Stats()
+		p.stats.updateFromStats(&st)
+	})
 
 	return p
 }
@@ -221,11 +222,20 @@ func NewSyncProducer(logger zlog.Logger, cfg *ProducerConfig) Producer {
 		logger:  logger,
 		config:  cfg,
 		writer:  writer,
-		stats:   newProducerStats(cfg.StatsConfig.StatsPrefix),
+		stats:   newProducerStats(),
 		stop:    make(chan struct{}),
 		breaker: barber.NewBarber([]int{breakerServerID}, cfg.CircuitBreakerConfig),
 	}
-	p.runStatsUpdater()
+
+	updater := &statsUpdater{
+		refreshInterval: cfg.StatsConfig.RefreshInterval,
+		stop:            p.stop,
+		enabled:         cfg.StatsConfig.Enabled,
+	}
+	updater.run(func() {
+		st := p.writer.Stats()
+		p.stats.updateFromStats(&st)
+	})
 
 	return p
 }
