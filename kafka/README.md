@@ -127,13 +127,11 @@ Maximum wait time for _local_ producer queue is being filled.
 
 #### What is the best QueueBufferingTimeout option?
 
-Когда выбирается значение опции, нужно исходить из следующих правил:
-
 When you're trying to choose option value, you have to consider these conditions:
 
 For asynchronous producer: **Increase of this option value leads to increased RAM(RSS) usage, decrease leads to increased CPU usage**
 
-For synchronous producer: **Увеличение значение ведёт к увеличению RTT(Round-Trip-Time), уменьшение -- к увеличению использования CPU**
+For synchronous producer: **Increasing option value leads to increased RTT(Round-Trip-Time), reducing -- to increased CPU usage**
 
 It happens due to these reasons:
 
