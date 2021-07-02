@@ -42,7 +42,7 @@ type Shard interface {
 
 	// ExecReplica execs query on MySQL replica.
 	//
-	// Replica is chosen according to ReplicaStrategy from configuration.
+	// Replica is chosen according to ReplicaStrategy table configuration.
 	// For further information, see Exec for sql.DB
 	ExecReplica(context.Context, string, ...interface{}) (sql.Result, error)
 

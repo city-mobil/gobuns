@@ -57,6 +57,18 @@ const (
 	ClusterConnectorTypeSQLx ClusterConnectorType = "sqlx"
 )
 
+// TraceConfig holds configuration for auto tracing.
+// By default all options are set to false intentionally.
+type TraceConfig struct {
+	// MetricQueryTable, if set to true,
+	// will enable recording of sql query tables in metrics.
+	MetricQueryTable bool
+
+	// MetricQueryOperation, if set to true,
+	// will enable recording of sql query type in metrics.
+	MetricQueryOperation bool
+}
+
 // ClusterConfig is a configuration for MySQL cluster.
 type ClusterConfig struct {
 	Shards []*ShardConfig
@@ -81,6 +93,9 @@ type ShardConfig struct {
 
 	// MaxBarberAttempts is a number of retries for choosing available replica.
 	MaxBarberAttempts int
+
+	// TraceConfig is an auto tracing configuration.
+	TraceConfig *TraceConfig
 }
 
 func (s *ShardConfig) withDefaults() *ShardConfig { //nolint:unused

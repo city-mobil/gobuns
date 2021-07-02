@@ -15,12 +15,15 @@ require (
 	github.com/hashicorp/consul/api v1.6.0
 	github.com/hashicorp/consul/sdk v0.6.0
 	github.com/jmoiron/sqlx v1.2.0
+	github.com/kr/text v0.2.0 // indirect
 	github.com/luna-duclos/instrumentedsql v1.1.3
 	github.com/luna-duclos/instrumentedsql/opentracing v0.0.0-20200611091901-487c5ec83473
 	github.com/opentracing-contrib/go-stdlib v1.0.0
 	github.com/opentracing/opentracing-go v1.1.1-0.20190913142402-a7454ce5950e
 	github.com/pelletier/go-toml v1.6.0 // indirect
 	github.com/philhofer/fwd v1.0.0 // indirect
+	github.com/pingcap/check v0.0.0-20200212061837-5e12011dc712 // indirect
+	github.com/pingcap/parser v0.0.0-20200623164729-3a18f1e5dceb
 	github.com/prometheus/client_golang v1.8.0
 	github.com/prometheus/common v0.15.0
 	github.com/rs/xid v1.3.0
@@ -40,13 +43,15 @@ require (
 	github.com/viciious/go-tarantool v0.0.0-20200828132927-e6f3447542e2
 	go.uber.org/atomic v1.6.0
 	go.uber.org/zap v1.16.0
+	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a // indirect
 	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/mod v0.4.2 // indirect
+	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
 	golang.org/x/sys v0.0.0-20210420072515-93ed5bcd2bfe // indirect
 	golang.org/x/tools v0.1.0 // indirect
 	google.golang.org/genproto v0.0.0-20200829155447-2bf3329a0021 // indirect
-	google.golang.org/grpc v1.31.1
-	google.golang.org/protobuf v1.25.0 // indirect
+	google.golang.org/grpc v1.36.0
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/ini.v1 v1.52.0 // indirect
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 )
