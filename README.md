@@ -59,3 +59,7 @@
 
 
 * [zlog](zlog/README.md) - пакет для работы с логированием на основе [zerolog](https://github.com/rs/zerolog)
+
+# Disclaimer
+
+All information and source code are provided AS-IS, without express or implied warranties. Use of the source code or parts of it is at your sole discretion and risk. Citymobil LLC takes reasonable measures to ensure the relevance of the information posted in this repository, but it does not assume responsibility for maintaining or updating this repository or its parts outside the framework established by the company independently and without notifying third parties.
