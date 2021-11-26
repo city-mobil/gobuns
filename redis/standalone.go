@@ -165,12 +165,11 @@ func NewDefaultStandaloneWithPrefix(
 	prefix string,
 ) Redis {
 	// Circuit breaker hosts, will contain hosts ids for checking availability
-	cbHosts := make([]int, 0, len(config.Slaves)+1)
+	cbHosts := make([]int, 1, len(config.Slaves)+1)
 
 	// Configure items clients with hooks
 	for i := range config.Slaves {
-		index := i + 1
-		cbHosts[index] = index
+		cbHosts = append(cbHosts, i+1)
 	}
 
 	// Create circuit breaker for redis standalone client
