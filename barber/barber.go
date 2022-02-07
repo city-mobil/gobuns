@@ -93,7 +93,7 @@ func (b *barber) IsAvailable(serverID int, tm time.Time) bool {
 		return false
 	}
 
-	res := h.countFails(tm.Unix(), b.config.Threshold)
+	res := h.countFails(tm.Unix(), b.config.MaxFails)
 	return res <= b.config.MaxFails
 }
 
