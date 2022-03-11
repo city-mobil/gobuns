@@ -88,6 +88,9 @@ type Config struct {
 	// PublicCertPath is a OS-path for the private HTTPS certificate.
 	PrivateCertPath string
 
+	// CACertPath is a OS-path for root certificate.
+	CACertPath string
+
 	// NoHTTPS ignores HTTPS if set.
 	NoHTTPS bool
 
@@ -145,6 +148,7 @@ func NewConfig(prefix string) func() *Config {
 		tlsVersion              = config.String(p("tls.version"), "1.2", "TLS version")
 		tlsPublicCert           = config.String(p("tls.cert.public"), "", "path to a public client TLS cert")
 		tlsPrivateCert          = config.String(p("tls.cert.private"), "", "path to a private client TLS cert")
+		tlsRootCert             = config.String(p("tls.cert.root"), "", "path to a root CA cert")
 		metricsCollect          = config.Bool(p("metrics.collect"), false, "enables gathering metrics in Prometheus format")
 	)
 
@@ -161,6 +165,7 @@ func NewConfig(prefix string) func() *Config {
 			PrivateCertPath:         *tlsPrivateCert,
 			ForceInsecureSkipVerify: *forceInsecureSkipVerify,
 			PublicCertPath:          *tlsPublicCert,
+			CACertPath:              *tlsRootCert,
 			Metrics: ConfigMetrics{
 				Collect: *metricsCollect,
 			},
