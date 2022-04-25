@@ -2,6 +2,8 @@ package external
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -10,6 +12,14 @@ func newDefaultTransport(cfg *Config) (http.RoundTripper, error) {
 	insecureTLS := cfg.NoHTTPS
 	tlsConfig := &tls.Config{ //nolint:gosec
 		MinVersion: castTLSVersion(cfg.MinVersionTLS),
+	}
+	if cfg.CACertPath != "" {
+		caCert, err := ioutil.ReadFile(cfg.CACertPath)
+		if err != nil {
+			return nil, err
+		}
+		tlsConfig.RootCAs = x509.NewCertPool()
+		tlsConfig.RootCAs.AppendCertsFromPEM(caCert)
 	}
 	if cfg.PrivateCertPath != "" || cfg.PublicCertPath != "" {
 		insecureTLS = false
