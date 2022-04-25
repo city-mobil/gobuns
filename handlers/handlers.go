@@ -17,7 +17,7 @@ const (
 // ContextHandler is a handler wrapper for HTTP requests API.
 //
 // data is a not-serialized response returned from the handler.
-type ContextHandler func(ctx context.Context) (interface{}, error)
+type ContextHandler func(ctx Context) (interface{}, error)
 
 // loggingHandler is the http.Handler implementation for AccessLogWrapper.
 type loggingHandler struct {
@@ -35,7 +35,10 @@ func (h loggingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	start := time.Now()
-	data, err := h.handler(ctx)
+	data, err := h.handler(&baseContext{
+		Context: ctx,
+		httpReq: r,
+	})
 	passed := time.Since(start)
 
 	status := http.StatusOK

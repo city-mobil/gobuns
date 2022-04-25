@@ -57,7 +57,7 @@ accessLogger := handlers.NewAccessLogger(endpoint, WithFilter(LogExcept2xx), Wit
 базе), необходимо возвращать `RequestError`.
 
 ```go
-func HandleRequest(ctx context.Context) (interface{}, error) {
+func HandleRequest(ctx handlers.Context) (interface{}, error) {
     if ctx.HTTPRequest().Method != http.MethodGet {
         return nil, &RequestError{
             Status: 404,
